@@ -76,9 +76,6 @@ makeCard(i);
 localStorage.setItem("currentWord", cardFront.textContent);
 
 const orderCards = {};
-  words.forEach(function(item, index) {
-    orderCards[index] = words[index].en;
-  })
 
 //////////////////////////////////////////////////////////////////
 
@@ -109,7 +106,8 @@ shuffleBtn.addEventListener("click", () => {
   localStorage.setItem("currentWord", cardFront.textContent);
 
   words.forEach((item, index) => {
-    orderCards[index] = item.en;
+    const order = ++index;
+    orderCards[order] = item.en;
   });
   localStorage.setItem("orderCards", JSON.stringify(orderCards));
 });
