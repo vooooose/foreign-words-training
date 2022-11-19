@@ -28,6 +28,63 @@ const words = [
   },
 ]
 
+const textWord = document.querySelector(".enter-word label");
+let userWord = document.querySelector("#user-word");
+
+const sendWord = document.querySelector(".enter-word button");
+let newWord = null;
+
+function addNewWord() {
+  sendWord.replaceWith(userWord)
+  sendWord.classList.add("hidden");
+  
+  newWord = {};
+  let ruNewWord = document.createElement("input");;
+  let exampleNewWord = document.createElement("input");;
+  userWord.value = "";
+
+  userWord.addEventListener("keydown", (event) => {
+    if(event.key == "Enter") {
+      newWord.en = userWord.value;
+      textWord.textContent = "Введите перевод:";
+      userWord.replaceWith(ruNewWord);
+      ruNewWord.focus();
+    }
+  })
+  
+  ruNewWord.addEventListener("keydown", (event) => {
+    if(event.key == "Enter") {
+      newWord.ru = ruNewWord.value;
+      textWord.textContent = "Введите пример:";
+      ruNewWord.replaceWith(exampleNewWord);
+      exampleNewWord.focus();
+    }
+  })
+  
+  exampleNewWord.addEventListener("keydown", (event) => {
+    if(event.key == "Enter") {
+      newWord.example = exampleNewWord.value;
+      userWord = document.createElement("input");
+      textWord.textContent = `Нажмите, чтобы добавить "${newWord.en}"`;
+      exampleNewWord.replaceWith(sendWord);
+      sendWord.classList.remove("hidden");
+    }
+  })
+  return newWord;
+}
+
+addNewWord();
+
+sendWord.addEventListener("click", () => {
+  words.push(newWord);
+  totalWord.textContent = words.length;
+  textWord.textContent = "Введите следующее слово:";
+  next.removeAttribute("disabled");
+  makeTestWords();
+  addNewWord();
+})
+
+
 const cardFront = document.querySelector("#card-front h1");
 const cardBack = document.querySelector("#card-back h1");
 const cardBackExample = document.querySelector("#card-back p span");
@@ -82,14 +139,11 @@ const orderCards = {};
 function shuffle(array) {
   let currentIndex = array.length,  randomIndex;
 
-  // While there remain elements to shuffle.
   while (currentIndex != 0) {
 
-    // Pick a remaining element.
     randomIndex = Math.floor(Math.random() * currentIndex);
     currentIndex--;
 
-    // And swap it with the current element.
     [array[currentIndex], array[randomIndex]] = [
       array[randomIndex], array[currentIndex]];
   }
@@ -115,7 +169,6 @@ shuffleBtn.addEventListener("click", () => {
 //////////////////////////////////////////////////////////////////
 
 next.addEventListener("click", () => {
-  //i++;
   i = (i + 1) % words.length;
   makeCard(i);
 
@@ -127,8 +180,7 @@ next.addEventListener("click", () => {
   localStorage.setItem("currentWord", cardFront.textContent);
 })
 
-back.addEventListener("click", (event) => {
-  //i--;
+back.addEventListener("click", () => {
   i = (i + words.length - 1) % words.length;
   makeCard(i);
 
@@ -188,9 +240,12 @@ function countTime() {
 //////////////////////////////////////////////////////////////////
 
 const testWords = {};
-words.forEach((word) => {
-  testWords[word.en] = word.ru;
-});
+function makeTestWords() {
+  words.forEach((word) => {
+    testWords[word.en] = word.ru;
+  });
+}
+makeTestWords();
 
 //////////////////////////////////////////////////////////////////
 
@@ -291,11 +346,28 @@ examCardsContainer.addEventListener("click", function exam(e) {
     trackProgress(examProgress, percentCount);
   } else {
     secondWord.classList.add("wrong");
-
-    setTimeout(() => {
+    resetCards();
+    firstWord = null;
+    
+  /*  setTimeout(() => {
       secondWord.classList.remove("wrong");
-      firstWord.classList.remove("correct");
+      if (firstWord) {
+        firstWord.classList.remove("correct");
+      }
       firstWord = null;
+    }, 500);*/
+  }
+
+  function resetCards() {
+    const correctCards = document.querySelectorAll(".correct");
+    const inCorrectCards = document.querySelectorAll(".wrong");
+  
+    setTimeout(() => {
+      [...correctCards, ...inCorrectCards].forEach((card) => {
+        if (!card.classList.contains("fade-out")) {
+          card.className = "card";
+        }
+      });
     }, 500);
   }
 
@@ -304,7 +376,6 @@ examCardsContainer.addEventListener("click", function exam(e) {
       this.removeEventListener("click", exam);
       clearInterval(timerId);
       localStorage.setItem("examTime", time.textContent);
-      alert("win");
 
       for (let enWord in attemptCounter) {
         makeWordStats(enWord, attemptCounter[enWord]);
@@ -321,10 +392,8 @@ examCardsContainer.addEventListener("click", function exam(e) {
       resultsTime.textContent = time.textContent;
       resultsModal.classList.remove("hidden");
     }
-  }, 600)
+  }, 500)
 });
-
-//////////////////////////////////////////////////////////////////
 
 
 

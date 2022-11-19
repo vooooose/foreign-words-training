@@ -275,3 +275,22 @@ progress {
     opacity: 0;
   }
 }
+
+.enter-word {
+  margin-top: 50px;
+}
+
+.enter-word input {
+  margin-top: 15px;
+  padding: 10px;
+  font-size: 17px;
+}
+
+.enter-word button {
+  display: block;
+  margin: 10px auto 0;
+  cursor: pointer;
+  padding: 7px;
+  background-color: #f3a6be;
+  color: #fff;
+}
