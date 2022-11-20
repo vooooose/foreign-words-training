@@ -2,35 +2,36 @@
 
 const words = [
   {
-    "en": "famine",
-    "ru": "голод",
-    "example": "My grandmother told me about famine."
+    "en": "claim",
+    "ru": "утверждать",
+    "example": "He claims that this is his book."
   },
   {
-    "en": "peel",
-    "ru": "чистить",
-    "example": "I always help my mother peel potatoes."
+    "en": "divide",
+    "ru": "делить",
+    "example": "We divided the pizza."
   },
   {
-    "en": "parsley",
-    "ru": "петрушка",
-    "example": "You can use parsley to decorate your food."
+    "en": "sense",
+    "ru": "чувствовать",
+    "example": "I could sense that he was watching me."
   },
   {
-    "en": "dill",
-    "ru": "укроп",
-    "example": "The dill is very good for our health."
+    "en": "contribute",
+    "ru": "вносить вклад",
+    "example": "We decided to contribute money to the new hospital."
   },
   {
-    "en": "sprinkle",
-    "ru": "поливать",
-    "example": "I like to sprinkle my pancakes with walnuts."
+    "en": "lay",
+    "ru": "класть",
+    "example": "Don't lay your socks on the floor."
   },
-]
+];
+
+//////////////////////////////////////////////////////////////////
 
 const textWord = document.querySelector(".enter-word label");
 let userWord = document.querySelector("#user-word");
-
 const sendWord = document.querySelector(".enter-word button");
 let newWord = null;
 
@@ -39,37 +40,38 @@ function addNewWord() {
   sendWord.classList.add("hidden");
   
   newWord = {};
-  let ruNewWord = document.createElement("input");;
-  let exampleNewWord = document.createElement("input");;
+  const ruNewWord = document.createElement("input");;
+  const exampleNewWord = document.createElement("input");;
   userWord.value = "";
+
+  function addValue(current, key, nextValue, text) {
+    newWord[key] = current.value;
+    textWord.textContent = text;
+    current.replaceWith(nextValue);
+  }
 
   userWord.addEventListener("keydown", (event) => {
     if(event.key == "Enter") {
-      newWord.en = userWord.value;
-      textWord.textContent = "Введите перевод:";
-      userWord.replaceWith(ruNewWord);
+      addValue(userWord, "en", ruNewWord, "Введите перевод:");
       ruNewWord.focus();
     }
-  })
-  
+  });
+
   ruNewWord.addEventListener("keydown", (event) => {
     if(event.key == "Enter") {
-      newWord.ru = ruNewWord.value;
-      textWord.textContent = "Введите пример:";
-      ruNewWord.replaceWith(exampleNewWord);
+      addValue(ruNewWord, "ru", exampleNewWord, "Введите пример:");
       exampleNewWord.focus();
     }
-  })
-  
+  });
+
   exampleNewWord.addEventListener("keydown", (event) => {
     if(event.key == "Enter") {
-      newWord.example = exampleNewWord.value;
       userWord = document.createElement("input");
-      textWord.textContent = `Нажмите, чтобы добавить "${newWord.en}"`;
-      exampleNewWord.replaceWith(sendWord);
+      addValue(exampleNewWord, "example", sendWord, `Нажмите, чтобы добавить "${newWord.en}"`);
       sendWord.classList.remove("hidden");
-    }
-  })
+    };
+  });
+
   return newWord;
 }
 
@@ -81,9 +83,11 @@ sendWord.addEventListener("click", () => {
   textWord.textContent = "Введите следующее слово:";
   next.removeAttribute("disabled");
   makeTestWords();
+  makeAttemptCounter();
   addNewWord();
-})
+});
 
+//////////////////////////////////////////////////////////////////
 
 const cardFront = document.querySelector("#card-front h1");
 const cardBack = document.querySelector("#card-back h1");
@@ -137,7 +141,7 @@ const orderCards = {};
 //////////////////////////////////////////////////////////////////
 
 function shuffle(array) {
-  let currentIndex = array.length,  randomIndex;
+  let currentIndex = array.length, randomIndex;
 
   while (currentIndex != 0) {
 
@@ -163,6 +167,7 @@ shuffleBtn.addEventListener("click", () => {
     const order = ++index;
     orderCards[order] = item.en;
   });
+
   localStorage.setItem("orderCards", JSON.stringify(orderCards));
 });
 
@@ -178,7 +183,7 @@ next.addEventListener("click", () => {
   slideCards(words.length - 1, back);
 
   localStorage.setItem("currentWord", cardFront.textContent);
-})
+});
 
 back.addEventListener("click", () => {
   i = (i + words.length - 1) % words.length;
@@ -243,9 +248,18 @@ const testWords = {};
 function makeTestWords() {
   words.forEach((word) => {
     testWords[word.en] = word.ru;
-  });
+  })
 }
 makeTestWords();
+
+//////////////////////////////////////////////////////////////////
+
+function makeTestCard(value) {
+  const div = document.createElement("div");
+  div.classList.add("card");
+  div.textContent = value;
+  return div;
+}
 
 //////////////////////////////////////////////////////////////////
 
@@ -257,13 +271,8 @@ exam.addEventListener("click", () => {
   const fragmentTest = new DocumentFragment();
 
   for (let testWord in testWords) {
-    const divEn = document.createElement("div");
-    divEn.classList.add("card");
-    divEn.textContent = testWord;
-
-    const divRu = document.createElement("div");
-    divRu.classList.add("card");
-    divRu.textContent = testWords[testWord];
+    const divEn = makeTestCard(testWord);
+    const divRu = makeTestCard(testWords[testWord]);
 
     fragmentTest.append(divEn, divRu);
   }
@@ -299,9 +308,12 @@ function makeWordStats(word, click) {
 //////////////////////////////////////////////////////////////////
 
 const attemptCounter = {};
-words.forEach((word) => {
-  attemptCounter[word.en] = 0;
-});
+function makeAttemptCounter() {
+  words.forEach((word) => {
+    attemptCounter[word.en] = 0;
+  })
+}
+makeAttemptCounter();
 
 //////////////////////////////////////////////////////////////////
 
@@ -310,6 +322,21 @@ let secondWord = null;
 let count = 0;
 let right = 0;
 let wrong = 0;
+
+function resetCards() {
+  const correctCards = document.querySelectorAll(".correct");
+  const inCorrectCards = document.querySelectorAll(".wrong");
+
+  setTimeout(() => {
+    [...correctCards, ...inCorrectCards].forEach((card) => {
+      if (!card.classList.contains("fade-out")) {
+        card.className = "card";
+      }
+    });
+  }, 500);
+}
+
+//////////////////////////////////////////////////////////////////
 
 examCardsContainer.addEventListener("click", function exam(e) {
   if (e.target === e.currentTarget) {
@@ -348,27 +375,6 @@ examCardsContainer.addEventListener("click", function exam(e) {
     secondWord.classList.add("wrong");
     resetCards();
     firstWord = null;
-    
-  /*  setTimeout(() => {
-      secondWord.classList.remove("wrong");
-      if (firstWord) {
-        firstWord.classList.remove("correct");
-      }
-      firstWord = null;
-    }, 500);*/
-  }
-
-  function resetCards() {
-    const correctCards = document.querySelectorAll(".correct");
-    const inCorrectCards = document.querySelectorAll(".wrong");
-  
-    setTimeout(() => {
-      [...correctCards, ...inCorrectCards].forEach((card) => {
-        if (!card.classList.contains("fade-out")) {
-          card.className = "card";
-        }
-      });
-    }, 500);
   }
 
   setTimeout(() => {
@@ -388,12 +394,13 @@ examCardsContainer.addEventListener("click", function exam(e) {
           localStorage.setItem("wrong", 0);
         }
       }
+
       resultsContent.append(statsFragment);
       resultsTime.textContent = time.textContent;
       resultsModal.classList.remove("hidden");
     }
-  }, 500)
-});
+  }, 500);
+})
 
 
 
